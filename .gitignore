@@ -1,0 +1,9 @@
+*.txt
+*.pyc
+*.pyo
+.DS_Store
+.coverage
+local_settings.py
+/static
+/env
+dev.db
