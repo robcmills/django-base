@@ -23,7 +23,7 @@ conf = {}
 if sys.argv[0].split(os.sep)[-1] in ("fab", "fab-script.py"):
     # Ensure we import settings from the current dir
     try:
-        conf = __import__("django_base.settings", globals(), locals(), [], 0).FABRIC
+        conf = __import__("settings", globals(), locals(), [], 0).FABRIC
         try:
             conf["HOSTS"][0]
         except (KeyError, ValueError):
@@ -357,11 +357,13 @@ def manage(command):
 
 @task
 @log_call
-def install():
-    """
-    Installs the base system and Python requirements for the entire server.
-    """
+def update():
     sudo("apt-get update -y -q")
+
+
+@task
+@log_call
+def install():
     apt("nginx libjpeg-dev python-dev python-setuptools git-core "
         "sqlite3 libpq-dev memcached supervisor")
     sudo("easy_install pip")
@@ -374,7 +376,7 @@ def create():
     """
     Create a new virtual environment for a project,
     Pull the project's repo from version control, 
-    install mezzanine requirements,
+    install requirements,
     add system-level configs for the project.
     """
 
