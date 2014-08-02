@@ -1,4 +1,4 @@
-*.txt
+django_base_secret_key.txt
 *.pyc
 *.pyo
 .DS_Store

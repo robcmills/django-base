@@ -110,7 +110,7 @@ def virtualenv():
     Runs commands within the project's virtualenv.
     """
     with cd(env.venv_path): # /home/ubuntu/django_base
-        with prefix("source env/bin/activate"):
+        with prefix("source %s/env/bin/activate" % env.venv_path):
             yield
 
 
@@ -119,7 +119,6 @@ def project():
     """
     Runs commands within the project's directory.
     """
-    print_command('project: ' + env.proj_dirname)
     with virtualenv():
         with cd(env.proj_dirname):
             yield
@@ -409,8 +408,15 @@ def requirements():
     """
     Install project requirements.txt
     """
-    with project(): # /home/ubuntu/mezzanine_base/project
-        pip("-r requirements.txt")
+    # with project(): # /home/ubuntu/mezzanine_base/project
+    pip("-r %s/requirements.txt" % env.proj_path)
+
+
+@task
+@log_call
+def test():
+    with project():
+        run("pwd")
 
 
 @task
