@@ -43,7 +43,7 @@ env.proj_name = conf.get("PROJECT_NAME", os.getcwd().split(os.sep)[-1])
 env.venv_home = conf.get("VIRTUALENV_HOME", "/home/%s" % env.user) # /home/ubuntu
 env.venv_path = "%s/%s" % (env.venv_home, env.proj_name) # /home/ubuntu/django_base
 env.proj_dirname = "project"
-env.proj_path = "%s/%s" % (env.venv_path, env.proj_dirname) # /home/ubuntu/mezzanine_base/project
+env.proj_path = "%s/%s" % (env.venv_path, env.proj_dirname) # /home/ubuntu/django_base/project
 env.manage = "%s/env/bin/python %s/project/manage.py" % ((env.venv_path,) * 2)
 env.domains = conf.get("DOMAINS", [conf.get("LIVE_HOSTNAME", env.hosts[0])])
 env.domains_nginx = " ".join(env.domains)
@@ -109,8 +109,8 @@ def virtualenv():
     """
     Runs commands within the project's virtualenv.
     """
-    with cd(env.venv_path):
-        with prefix("source %s/env/bin/activate" % env.venv_path):
+    with cd(env.venv_path): # /home/ubuntu/django_base
+        with prefix("source env/bin/activate"):
             yield
 
 
@@ -388,37 +388,45 @@ def make_env():
         if not exists('env'):
             run("virtualenv env")
 
+
 @task
 @log_call
-def create():
+def pull():
     """
-    Create a new virtual environment for a project,
-    Pull the project's repo from version control, 
-    install requirements,
-    add system-level configs for the project.
+    Pull or clone project repo from version control
     """
+    if exists(env.proj_path):
+        with project():
+            run("git pull")           
+    else:
+        with virtualenv():
+            run("git clone %s project" % env.repo_url)
 
-    # Create virtualenv & clone repo
-    if not exists(env.venv_path): # /home/ubuntu/mezzanine_base
-        run("mkdir %s" % env.venv_path)
-    with cd(env.venv_path):
-        if not exists('env'):
-            run("virtualenv env")
-        if not exists('project'):
-            run("git clone %s project" % (env.repo_url))
 
-    # TODO: Create DB and DB user.
-    # TODO: Set up SSL certificate.
-
-    # Set up project.
-    upload_template_and_reload("settings")
+@task
+@log_call
+def requirements():
+    """
+    Install project requirements.txt
+    """
     with project(): # /home/ubuntu/mezzanine_base/project
-        pip("-r %s/requirements.txt" % (env.proj_path))
-        pip("setproctitle south psycopg2 "
-            "django-compressor python-memcached")
-        # manage("createdb --noinput --nodata")
-        # TODO: update Site and User models
-    return True
+        pip("-r requirements.txt")
+
+
+@task
+@log_call
+def templates():
+    """
+    Add system-level configs for the project.
+    """
+    upload_template_and_reload("settings")
+
+
+
+# TODO: Create DB and DB user.
+# manage("createdb --noinput --nodata")
+# TODO: update Site and User models
+# TODO: Set up SSL certificate.
 
 
 @task
@@ -461,9 +469,9 @@ def deploy():
     """
     Deploy latest version of the project.
     pull latest from vcs,
-    install new requirements, 
+    install new requirements if any, 
+    collect any new static assets,
     # TODO: sync and migrate the database,
-    collect any new static assets, and 
     restart gunicorn's work processes for the project.
     """
     # ensure global nginx conf loads first
@@ -505,10 +513,13 @@ def rollback():
 @log_call
 def all():
     """
-    Installs everything required on a new system and deploys.
-    From the base software, up to the deployed project.
+    All the things
     """
     update()
     install()
-    if create():
-        deploy()
+    make_env()
+    pull()
+    requirements()
+
+    # if create():
+    #     deploy()
