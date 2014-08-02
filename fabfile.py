@@ -83,20 +83,14 @@ templates = {
         "remote_path": "/etc/supervisor/conf.d/%(proj_name)s.conf",
         "reload_command": "supervisorctl reload",
     },
-    "cron": {
-        "local_path": "deploy/crontab",
-        "remote_path": "/etc/cron.d/%(proj_name)s",
-        "owner": "root",
-        "mode": "600",
-    },
     "gunicorn": {
         "local_path": "deploy/gunicorn.conf.py.template",
         "remote_path": "%(proj_path)s/gunicorn.conf.py",
     },
-    "settings": {
-        "local_path": "deploy/local_settings.py.template",
-        "remote_path": "%(proj_path)s/local_settings.py",
-    },
+    # "settings": {
+    #     "local_path": "deploy/local_settings.py.template",
+    #     "remote_path": "%(proj_path)s/local_settings.py",
+    # },
 }
 
 
@@ -412,27 +406,22 @@ def requirements():
     pip("-r %s/requirements.txt" % env.proj_path)
 
 
-@task
-@log_call
-def test():
-    with project():
-        run("pwd")
+# TODO: Create DB and DB user.
+# manage("createdb --noinput --nodata")
+# TODO: update Site and User models
+# TODO: Set up SSL certificate.
 
 
 @task
 @log_call
 def templates():
     """
-    Add system-level configs for the project.
+    Uploads all templates only if changed, reload related services
     """
-    upload_template_and_reload("settings")
-
-
-
-# TODO: Create DB and DB user.
-# manage("createdb --noinput --nodata")
-# TODO: update Site and User models
-# TODO: Set up SSL certificate.
+    # ensure global nginx conf loads first
+    upload_template_and_reload('nginx_ec2')
+    for name in get_templates():
+        upload_template_and_reload(name)
 
 
 @task

@@ -6,4 +6,5 @@ django_base_secret_key.txt
 local_settings.py
 /static
 /env
+/ignore
 dev.db
