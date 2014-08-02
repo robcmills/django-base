@@ -414,7 +414,7 @@ def requirements():
 
 @task
 @log_call
-def templates():
+def upload_templates():
     """
     Uploads all templates only if changed, reload related services
     """
