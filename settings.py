@@ -27,7 +27,10 @@ with open('django_base_secret_key.txt') as f:
 
 TEMPLATE_DEBUG = True
 
-ALLOWED_HOSTS = ['ec2-54-193-88-107.us-west-1.compute.amazonaws.com']
+ALLOWED_HOSTS = [
+    'ec2-54-193-88-107.us-west-1.compute.amazonaws.com',
+    '127.0.0.1'
+]
 
 
 # Application definition
