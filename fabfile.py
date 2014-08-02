@@ -41,7 +41,7 @@ env.hosts = conf.get("HOSTS", [""])
 
 env.proj_name = conf.get("PROJECT_NAME", os.getcwd().split(os.sep)[-1])
 env.venv_home = conf.get("VIRTUALENV_HOME", "/home/%s" % env.user) # /home/ubuntu
-env.venv_path = "%s/%s" % (env.venv_home, env.proj_name) # /home/ubuntu/mezzanine_base
+env.venv_path = "%s/%s" % (env.venv_home, env.proj_name) # /home/ubuntu/django_base
 env.proj_dirname = "project"
 env.proj_path = "%s/%s" % (env.venv_path, env.proj_dirname) # /home/ubuntu/mezzanine_base/project
 env.manage = "%s/env/bin/python %s/project/manage.py" % ((env.venv_path,) * 2)
@@ -358,17 +358,35 @@ def manage(command):
 @task
 @log_call
 def update():
+    """
+    Update system
+    """
     sudo("apt-get update -y -q")
 
 
 @task
 @log_call
 def install():
+    """
+    Install system prerequistes
+    """
     apt("nginx libjpeg-dev python-dev python-setuptools git-core "
         "sqlite3 libpq-dev memcached supervisor")
     sudo("easy_install pip")
     sudo("pip install virtualenv")
 
+
+@task
+@log_call
+def make_env():
+    """
+    Create a new virtual environment
+    """
+    if not exists(env.venv_path): # /home/ubuntu/django_base
+        run("mkdir %s" % env.venv_path)
+    with cd(env.venv_path):
+        if not exists('env'):
+            run("virtualenv env")
 
 @task
 @log_call
@@ -490,6 +508,7 @@ def all():
     Installs everything required on a new system and deploys.
     From the base software, up to the deployed project.
     """
+    update()
     install()
     if create():
         deploy()

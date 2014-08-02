@@ -21,7 +21,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 DEBUG = False
 
 # SECURITY WARNING: keep the secret key used in production secret!
-with open('../django_base_secret_key.txt') as f:
+with open('django_base_secret_key.txt') as f:
     SECRET_KEY = f.read().strip()
 
 
