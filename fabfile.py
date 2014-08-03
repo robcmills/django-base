@@ -444,6 +444,7 @@ def remove():
 # Deployment #
 ##############
 
+
 @task
 @log_call
 def restart():
@@ -474,7 +475,7 @@ def deploy():
     for name in get_templates():
         upload_template_and_reload(name)
     with project(): # /home/ubuntu/mezzanine_base/project
-        static_dir = static()
+        # static_dir = static()
         with update_changed_requirements():
             run("git pull origin master -f")
         manage("collectstatic -v 0 --noinput")
