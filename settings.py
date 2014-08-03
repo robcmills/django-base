@@ -29,7 +29,8 @@ TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = [
     'ec2-54-193-88-107.us-west-1.compute.amazonaws.com',
-    '127.0.0.1'
+    '127.0.0.1',
+    'localhost',
 ]
 
 
@@ -42,6 +43,8 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'base_app',
+    'gunicorn',
 )
 
 MIDDLEWARE_CLASSES = (
